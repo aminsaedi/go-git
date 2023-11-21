@@ -1,7 +1,8 @@
 import requests
 import firebase_admin
 from firebase_admin import credentials, db
-
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse, parse_qs
 
 def initialize_firebase():
     # Initialize Firebase with the service account key JSON file
@@ -49,11 +50,39 @@ def list_open_issues(username, repository):
             }
             ref.child(str(issue['number'])).set(issue_data)
 
-        print("Sync completed successfully.")
+        return "Sync completed successfully."
     else:
-        print(f"Failed to retrieve issues. Status code: {response.status_code}")
+        return f"Failed to retrieve issues. Status code: {response.status_code}"
 
-if __name__ == "__main__":
-    # Replace 'your-username' and 'your-repository' with the actual GitHub username and repository name
-    list_open_issues('aminsaedi', 'chmod-octal-practice')
+class MyRequestHandler(BaseHTTPRequestHandler):
+    def _send_response(self, message):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(message.encode('utf-8'))
 
+    def do_GET(self):
+        # Parse the URL to extract parameters
+        parsed_url = urlparse(self.path)
+        params = parse_qs(parsed_url.query)
+
+        # Check if 'param1' and 'param2' are present
+        if 'owner' in params and 'repo' in params:
+            param1 = params['owner'][0]
+            param2 = params['repo'][0]
+
+            # Call your function with the parameters
+            result = list_open_issues(param1, param2)
+
+            # Send the result as a response
+            self._send_response(result)
+        else:
+            self._send_response("Error: Missing parameters 'owner' and/or 'repo'")
+
+def run(server_class=HTTPServer, handler_class=MyRequestHandler, port=8080):
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    print(f"Starting server on port {port}")
+    httpd.serve_forever()
+
+run()
