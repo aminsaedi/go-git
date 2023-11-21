@@ -17,6 +17,11 @@ def issue_exists(issue_number):
         return snapshot is not None
     except:
         return False
+
+    
+# Initialize Firebase
+initialize_firebase()
+
 def list_open_issues(username, repository):
     # GitHub API endpoint for issues
     url = f"https://api.github.com/repos/{username}/{repository}/issues"
@@ -29,8 +34,6 @@ def list_open_issues(username, repository):
         # Parse the JSON response
         issues = response.json()
 
-        # Initialize Firebase
-        initialize_firebase()
 
         # Get a reference to the Firebase Realtime Database 'issues' collection
         ref = db.reference('issues')
