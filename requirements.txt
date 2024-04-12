@@ -18,7 +18,7 @@ googleapis-common-protos==1.61.0
 grpcio==1.59.3
 grpcio-status==1.59.3
 httplib2==0.22.0
-idna==3.4
+idna==3.7
 msgpack==1.0.7
 proto-plus==1.22.3
 protobuf==4.25.1
